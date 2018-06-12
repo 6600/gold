@@ -1,0 +1,23 @@
+{
+  "name": "gold",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "ws": "^5.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PUGE/gold.git"
+  },
+  "author": "PUGE",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PUGE/gold/issues"
+  },
+  "homepage": "https://github.com/PUGE/gold#readme"
+}
