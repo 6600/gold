@@ -18,7 +18,15 @@ function cutString(original, before, after, index) {
     console.error("owo [sizeTransition:" + index + "不是一个整数!]");
   }
 }
-
+function cutStringArray(original, before, after, index) {
+  const aa = [], ab = 0
+  while (original.indexOf(before, index) > 0) {
+    aa[ab] = owo.text.cutString(original, before, after, index)
+    index = original.indexOf(before, index) + 1
+    ab++
+  }
+  return aa;
+}
 http.createServer((request, response) => {
   http.get('http://www.icbc.com.cn/ICBCDynamicSite/Charts/GoldTendencyPicture.aspx', (res) => {
     res.setEncoding('utf8')
