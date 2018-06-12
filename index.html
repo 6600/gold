@@ -1,0 +1,59 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+</head>
+<body>
+  <div id="app">
+    <div class="app-box">
+      <div class="left">
+          <p>持仓均价</p>
+          <input v-model="cost">
+          <p>持有数量</p>
+          <input v-model="share">
+      </div>
+      <div class="buy">
+        <span class="text">银行买入价格:</span>
+        <span class="number">{{buy}}</span>
+      </div>
+      <div class="sell">
+        <span class="text">银行卖出价格:</span>
+        <span class="number">{{sell}}</span>
+      </div>
+      <div class="profit">
+        <span class="text">浮动盈亏:</span>
+        <span class="number">{{((buy - cost) * share).toFixed(2)}}</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    let app = new Vue({
+      el: '#app',
+      data: {
+        buy: 0,
+        sell: 0,
+        cost: 267.42,
+        share: 8.4
+      }
+    })
+    const ws = new WebSocket("ws://localhost:8001")
+    ws.onopen = () => {
+      console.log('连接建立成功!')
+      ws.send("给我数据")
+      setInterval(() => {
+        ws.send("给我数据")
+      }, 5000)
+    }
+    ws.onmessage = (mess) => {
+      console.log('接收到新数据')
+      const data = JSON.parse(mess.data)
+      app.buy = data.buy
+      app.sell = data.sell
+    }
+  </script>
+</body>
+</html>

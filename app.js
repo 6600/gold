@@ -1,4 +1,6 @@
-const http = require("http");
+const http = require("http")
+const fs = require("fs")
+const WebSocket = require('ws')
 
 function cutString(original, before, after, index) {
   index = index || 0;
@@ -19,29 +21,50 @@ function cutString(original, before, after, index) {
   }
 }
 function cutStringArray(original, before, after, index) {
-  const aa = [], ab = 0
+  let aa = [], ab = 0
   while (original.indexOf(before, index) > 0) {
-    aa[ab] = owo.text.cutString(original, before, after, index)
+    aa[ab] = cutString(original, before, after, index)
     index = original.indexOf(before, index) + 1
     ab++
   }
   return aa;
 }
-http.createServer((request, response) => {
-  http.get('http://www.icbc.com.cn/ICBCDynamicSite/Charts/GoldTendencyPicture.aspx', (res) => {
-    res.setEncoding('utf8')
-    let rawData = '';
-    res.on('data', (chunk) => { rawData += chunk })
-    res.on('end', () => {
-      try {
-        const firstClean = cutString(rawData, '人民币账户黄金', '交易')
-        console.log(firstClean)
-        response.write(rawData)
-        response.end()
-      } catch (e) {
-        console.error(e.message)
-      }
+
+console.log(`服务运行在8001端口!`)
+
+const wss = new WebSocket.Server({ port: 8001 })
+
+wss.on('connection', function connection(ws) {
+  ws.on('message', function incoming(message) {
+    http.get('http://www.icbc.com.cn/ICBCDynamicSite/Charts/GoldTendencyPicture.aspx', (res) => {
+      res.setEncoding('utf8')
+      let rawData = '';
+      res.on('data', (chunk) => { rawData += chunk })
+      res.on('end', () => {
+        try {
+          // 截取字符串并去掉空格
+          const oneClean = cutString(rawData, '人民币账户黄金', 'AccGold.aspx').replace(/\ /g, '')
+          // 批量截取
+          const twoClean = cutStringArray(oneClean, `align="middle">\r\n`, `\r\n<`)
+          // 转化为对象
+          const threeClean = {
+            buy: parseFloat(twoClean[1]),
+            sell: parseFloat(twoClean[2])
+          }
+          ws.send(JSON.stringify(threeClean))
+        } catch (e) {
+          console.error(e.message)
+        }
+      })
     })
   })
-}).listen(3000)
-console.log(`程序运行在3000端口!`)
+})
+
+http.createServer((request, response) => {
+  response.writeHead(200, {
+    "Content-Type": "text/html"
+  })
+  response.write(fs.readFileSync("index.html"))
+  response.end()
+}).listen(8002)
+console.log(`页面运行在8002端口!`)
