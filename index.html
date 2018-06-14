@@ -22,6 +22,7 @@
       height: 100%;
       left: 0;
       top: 0;
+      z-index: 999;
       background-color: #f8f8f8;
     }
     .config-button {
@@ -87,20 +88,19 @@
       <div class="weui-cells__title">持有均价</div>
       <div class="weui-cells">
         <div class="weui-cell">
-            <div class="weui-cell__bd">
-              <input class="weui-input" v-model="cost" type="text" placeholder="请输入均价">
-            </div>
+          <div class="weui-cell__bd">
+            <input class="weui-input" v-model="cost" type="text" placeholder="请输入均价">
           </div>
+        </div>
       </div>
       <div class="weui-cells__title">持有数量</div>
       <div class="weui-cells">
         <div class="weui-cell">
-            <div class="weui-cell__bd">
-              <input class="weui-input" v-model="share" type="text" placeholder="请输入数量">
-            </div>
+          <div class="weui-cell__bd">
+            <input class="weui-input" v-model="share" type="text" placeholder="请输入数量">
           </div>
+        </div>
       </div>
-      
       <div class="buttom" @click="saveConfug">确认</div>
     </div>
   </div>
@@ -180,6 +180,10 @@
         app.showConfigPage = true
       }
     }
+    // 禁止页面拖动
+    document.body.addEventListener('touchmove' , function(e){
+      e.preventDefault();
+    })
   </script>
 </body>
 </html>
