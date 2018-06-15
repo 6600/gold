@@ -75,7 +75,8 @@
             <div class="weui-cell__bd">
                 <p>浮动盈亏</p>
             </div>
-            <div class="weui-cell__ft">{{((buy - cost) * share).toFixed(2)}} 元</div>
+            <div v-if="picked === 'rise'" class="weui-cell__ft">{{((buy - cost) * share).toFixed(2)}} 元</div>
+            <div v-else class="weui-cell__ft">{{((cost - sell) * share).toFixed(2)}} 元</div>
         </div>
       </div>
       <!-- 右下部设置按钮 -->
@@ -85,7 +86,28 @@
       <svg width="200px"  height="200px"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="lds-radio" style="background: none;"><circle cx="28" cy="75" r="11" ng-attr-fill="{{config.c1}}" fill="#1d3f72"><animate attributeName="fill-opacity" calcMode="linear" values="0;1;1" keyTimes="0;0.2;1" dur="1" begin="0s" repeatCount="indefinite"></animate></circle><path d="M28 47A28 28 0 0 1 56 75" fill="none" ng-attr-stroke="{{config.c2}}" stroke-width="10" stroke="#5699d2"><animate attributeName="stroke-opacity" calcMode="linear" values="0;1;1" keyTimes="0;0.2;1" dur="1" begin="0.1s" repeatCount="indefinite"></animate></path><path d="M28 25A50 50 0 0 1 78 75" fill="none" ng-attr-stroke="{{config.c3}}" stroke-width="10" stroke="#d8ebf9"><animate attributeName="stroke-opacity" calcMode="linear" values="0;1;1" keyTimes="0;0.2;1" dur="1" begin="0.2s" repeatCount="indefinite"></animate></path></svg>
     </div>
     <div class="config page__bd" v-if="showConfigPage">
-      <div class="weui-cells__title">持有均价</div>
+      <div class="weui-cells__title">购买类型</div>
+      <div class="weui-cells weui-cells_radio">
+        <label class="weui-cell weui-check__label" for="x11">
+          <div class="weui-cell__bd">
+            <p>先买入后卖出（买涨）</p>
+          </div>
+          <div class="weui-cell__ft">
+            <input type="radio" class="weui-check" name="radio1" id="x11" value="rise" v-model="picked">
+            <span class="weui-icon-checked"></span>
+          </div>
+        </label>
+        <label class="weui-cell weui-check__label" for="x12">
+          <div class="weui-cell__bd">
+            <p>先卖出后买入（买跌）</p>
+          </div>
+          <div class="weui-cell__ft">
+            <input type="radio" name="radio1" class="weui-check" value="fall" v-model="picked" id="x12">
+            <span class="weui-icon-checked"></span>
+          </div>
+        </label>
+      </div>
+      <div class="weui-cells__title">持有均价    单位:元</div>
       <div class="weui-cells">
         <div class="weui-cell">
           <div class="weui-cell__bd">
@@ -93,7 +115,7 @@
           </div>
         </div>
       </div>
-      <div class="weui-cells__title">持有数量</div>
+      <div class="weui-cells__title">持有数量    单位:克</div>
       <div class="weui-cells">
         <div class="weui-cell">
           <div class="weui-cell__bd">
@@ -104,36 +126,12 @@
       <div class="buttom" @click="saveConfug">确认</div>
     </div>
   </div>
+
   <script>
-    // 设置Cookie
-    function setCookie (name, value, expiration) {
-      let endTime = -1
-      // 设置过期时间
-      if (expiration) {
-        const exp = new Date()
-        exp.setTime(exp.getTime() + 60 * 1000 * expiration)
-        endTime = exp.toGMTString()
-      }
-      let domain = document.domain
-      document.cookie = name + '=' + escape(value) + ';expires=' + endTime + ';path=/;domain=' + domain
-    }
-    // 读取Cookie
-    function getCookie (key) {
-      if (document.cookie.length > 0) {
-        let start = document.cookie.indexOf(key + '=')
-        if (start !== -1) {
-          start = start + key.length + 1
-          let end = document.cookie.indexOf(';', start)
-          if (end === -1) end = document.cookie.length
-          return unescape(document.cookie.substring(start, end))
-        }
-      }
-      return ''
-    }
-    
     let app = new Vue({
       el: '#app',
       data: {
+        picked: 'rise',
         isConnect: false,
         showConfigPage: false,
         buy: 0,
@@ -148,7 +146,7 @@
             cost: this.cost,
             share: this.share
           })
-          setCookie('config', saveData)
+          localStorage.config = saveData
         }
       }
     })
@@ -170,7 +168,7 @@
       app.sell = data.sell
     }
     window.onload = () => {
-      const configData = getCookie('config')
+      const configData = localStorage.config
       console.log(configData)
       if (configData) {
         const redData = JSON.parse(configData)
@@ -181,8 +179,8 @@
       }
     }
     // 禁止页面拖动
-    document.body.addEventListener('touchmove' , function(e){
-      e.preventDefault();
+    document.body.addEventListener('touchmove', (e) => {
+      e.preventDefault()
     })
   </script>
 </body>

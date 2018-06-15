@@ -31,29 +31,46 @@ function cutStringArray(original, before, after, index) {
 }
 
 console.log(`服务运行在8001端口!`)
-
+// 创建WebSocket服务 监听端口
 const wss = new WebSocket.Server({ port: 8001 })
 
-wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
+// WebSocket连接建立事件
+wss.on('connection', (ws) => {
+  let tempData = {
+    timestamp: 0,
+    data: null
+  }
+  ws.on('message', (message) => {
+    // 获取当前时间戳
+    const currentTimestamp = Date.parse(new Date())
+    // 判断距上次获取数据是否已经过去了5秒 如果是 重新获取数据 否则返回缓存数据
+    if (currentTimestamp - tempData.timestamp < 5000) {
+      ws.send(tempData.data)
+      return
+    }
+    // 抓取数据
     http.get('http://www.icbc.com.cn/ICBCDynamicSite/Charts/GoldTendencyPicture.aspx', (res) => {
       res.setEncoding('utf8')
-      let rawData = '';
+      let rawData = ''
       res.on('data', (chunk) => { rawData += chunk })
       res.on('end', () => {
-        try {
-          // 截取字符串并去掉空格
-          const oneClean = cutString(rawData, '人民币账户黄金', 'AccGold.aspx').replace(/\ /g, '')
-          // 批量截取
-          const twoClean = cutStringArray(oneClean, `align="middle">\r\n`, `\r\n<`)
-          // 转化为对象
-          const threeClean = {
-            buy: parseFloat(twoClean[1]),
-            sell: parseFloat(twoClean[2])
-          }
-          ws.send(JSON.stringify(threeClean))
-        } catch (e) {
-          console.error(e.message)
+        // ------------------------------------------ 数据清洗 ------------------------------------------
+        // 截取字符串并去掉空格
+        const oneClean = cutString(rawData, '人民币账户黄金', 'AccGold.aspx').replace(/\ /g, '')
+        // 批量截取
+        const twoClean = cutStringArray(oneClean, `align="middle">\r\n`, `\r\n<`)
+        // 转化为对象
+        const threeClean = {
+          buy: parseFloat(twoClean[1]),
+          sell: parseFloat(twoClean[2])
+        }
+        const sendData = JSON.stringify(threeClean)
+        // ---------------------------------------------------------------------------------------------
+        ws.send(sendData)
+        // 更新缓存数据和时间
+        tempData = {
+          data: sendData,
+          timestamp: Date.parse(new Date())
         }
       })
     })
